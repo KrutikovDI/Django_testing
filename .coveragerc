@@ -1,0 +1,2 @@
+[run]
+omit=tests/*,env_test/*,manage.py,django_testing/*
