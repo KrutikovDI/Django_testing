@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from rest_framework.test import APIClient
 from model_bakery import baker
@@ -21,7 +23,7 @@ def course_factory():
 @pytest.fixture
 def student_factory():
     def factory(*args, **kwargs):
-        return baker.maker(Student, *args, **kwargs)
+        return baker.make(Student, *args, **kwargs)
     return factory
 
 # получение деталей одного курса
@@ -29,7 +31,7 @@ def student_factory():
 def test_get_course(client, student, course_factory):
     course1 = Course.objects.create(name='Java')
     course1.students.set([student, ])
-    response = client.get('/api/v1/courses/')
+    response = client.get('/api/v1/courses/', data={'id': 1})
     data = response.json()
     assert len(data) == 1
     assert data[0]['name'] == course1.name
@@ -69,24 +71,25 @@ def test_course_create(client, student):
 
 # тест на обновление курса
 @pytest.mark.django_db
-def test_course_update(client, student):
+def test_course_update(client, student, course_factory):
     # students = student_factory(_quantity=20).json()
     course_factory(_quantity=10)
-    response = client.update('/api/v1/courses', data={'id': 1, 'name': 'Java'})
-    data = response.json()
-    assert data[1]['name'] == response.name
+    response = client.patch('/api/v1/courses', data={'id': 1, 'name': 'Java'}, follow=True)
+    assert response.status_code == 200
 
 # тест на удаление курса
 @pytest.mark.django_db
-def test_course_delete(client, student):
+def test_course_delete(client, student, course_factory):
     courses = course_factory(_quantity=10)
-    response = client.delete('/api/v1/courses', data={'id': 1})
+    response = client.get('/api/v1/courses/')
+    data = response.json()
+    response = client.delete(f'/api/v1/courses/{data[3]["id"]}')
     assert response.status_code == 201
 
 # Добавить валидацию на максимальное число студентов на курсе — 20
 @pytest.mark.django_db
-def test_course_max_students(client):
+def test_course_max_students(client, student_factory):
     students = student_factory(_quantity=21)
-    response = client.post('/api/v1/courses/', data={'id': 1, 'name': 'Java', 'students': [students.id, ]})
+    response = client.post('/api/v1/courses/', data={'id': 1, 'name': 'Java', 'students': students})
     assert response.status_code == 201
 
