@@ -27,14 +27,23 @@ def student_factory():
     return factory
 
 # получение деталей одного курса
+# @pytest.mark.django_db
+# def test_get_course(client, course_factory):
+#     courses = course_factory(_quantity=10)
+#     course_id = courses[5].id
+#     url = f'/api/v1/courses/'
+#     response = client.get(url, data={'id': course_id})
+#     data = response.json()
+#     assert data[0]['id'] == course_id
+
 @pytest.mark.django_db
 def test_get_course(client, course_factory):
     courses = course_factory(_quantity=10)
     course_id = courses[5].id
-    url = f'/api/v1/courses/'
-    response = client.get(url, data={'id': course_id})
+    url = f'/api/v1/courses/{course_id}'
+    response = client.get(url)
     data = response.json()
-    assert data[0]['id'] == course_id
+    assert data['id'] == course_id
 
 # получение списка курсов
 @pytest.mark.django_db
@@ -76,7 +85,7 @@ def test_course_create(client, student):
 def test_course_update(client, course_factory):
     courses = course_factory(_quantity=10)
     course_id = courses[5].id
-    response = client.patch('/api/v1/courses', data={'id': course_id, 'name': 'Java'}, follow=True)
+    response = client.patch(f'/api/v1/courses/{course_id}', data={'name': 'Java'}, follow=True)
     assert response.status_code == 200
 
 # тест на удаление курса
@@ -84,7 +93,7 @@ def test_course_update(client, course_factory):
 def test_course_delete(client, course_factory):
     courses = course_factory(_quantity=10)
     course_id = courses[0].id
-    response = client.delete('/api/v1/courses/', data={'id': course_id})
+    response = client.delete(f'/api/v1/courses/{course_id}')
     assert response.status_code == 201
 
 # Добавить валидацию на максимальное число студентов на курсе — 20
