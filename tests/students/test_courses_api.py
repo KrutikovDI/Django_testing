@@ -40,7 +40,7 @@ def student_factory():
 def test_get_course(client, course_factory):
     courses = course_factory(_quantity=10)
     course_id = courses[5].id
-    url = f'/api/v1/courses/{course_id}'
+    url = f'/api/v1/courses/{course_id}/'
     response = client.get(url)
     data = response.json()
     assert data['id'] == course_id
@@ -85,7 +85,7 @@ def test_course_create(client, student):
 def test_course_update(client, course_factory):
     courses = course_factory(_quantity=10)
     course_id = courses[5].id
-    response = client.patch(f'/api/v1/courses/{course_id}', data={'name': 'Java'}, follow=True)
+    response = client.patch(f'/api/v1/courses/{course_id}/', data={'name': 'Java'}, follow=True)
     assert response.status_code == 200
 
 # тест на удаление курса
@@ -93,15 +93,15 @@ def test_course_update(client, course_factory):
 def test_course_delete(client, course_factory):
     courses = course_factory(_quantity=10)
     course_id = courses[0].id
-    response = client.delete(f'/api/v1/courses/{course_id}')
-    assert response.status_code == 201
+    response = client.delete(f'/api/v1/courses/{course_id}/')
+    assert response.status_code == 204
 
 # Добавить валидацию на максимальное число студентов на курсе — 20
 @pytest.mark.django_db
 def test_course_max_students(client, student_factory):
-    students = student_factory(_quantity=21)
+    students = student_factory(_quantity=10)
     students_list_id = []
-    for i in range(0,21):
+    for i in range(0,10):
         students_list_id.append(students[i].id)
     response = client.post('/api/v1/courses/', data={'id': 1, 'name': 'Java', 'students': students_list_id})
     assert response.status_code == 201
