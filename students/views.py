@@ -16,6 +16,7 @@ class CoursesViewSet(ModelViewSet):
     filterset_class = CourseFilter
 
     def create(self, request, *args, **kwargs):
-        if request.course.students.count() >= settings.MAX_STUDENTS_PER_COURSE:
+        # if request.course.students.count() >= settings.MAX_STUDENTS_PER_COURSE:
+        if len(request.data.get('students')) >= settings.MAX_STUDENTS_PER_COURSE:
             raise ValidationError('too many students on course', code='too-many-students')
         return super().create(request, *args, **kwargs)
